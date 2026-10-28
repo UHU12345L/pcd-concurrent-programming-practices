@@ -3,10 +3,10 @@ package practica4_PCD;
 import java.util.Random;
 
 /**
- * Tarea que saca 10 números de la cola.
+ * Hilo que saca 15 numeros de la cola, uno cada 1-3 segundos.
  * @author Laura
  */
-public class Consumidor extends Thread { //solo define la tarea, no es un hilo
+public class Consumidor extends Thread { //la clase es un hilo
 
     private ColaLenta lacola;
 
@@ -27,9 +27,7 @@ public class Consumidor extends Thread { //solo define la tarea, no es un hilo
             } catch (Exception ex) {
                 System.out.println("Consumidor: " +id+" termina "+ ex.getMessage());
             }
-        //aviso de que he terminado (cambia fin, hace notifyAll)
-        System.out.println("Consumidor "+id+": her terminado, aviso a los productores");
-        lacola.finalizar();
+        System.out.println("Consumidor "+id+": he terminado");
     }
 
     @Override

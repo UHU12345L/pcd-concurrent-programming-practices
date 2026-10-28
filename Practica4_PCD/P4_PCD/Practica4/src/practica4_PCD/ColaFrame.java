@@ -3,11 +3,13 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/AWTForms/Frame.java to edit this template
  */
 package practica4_PCD;
-import java.awt.Color;  
+
+import java.awt.Color;
 
 /**
- * Crea la ventanaa, el canvas, la cola, los hitos
- * Muestra graficamente como se llena y vacia la cola
+ * Crea la ventanaa, el canvas, la cola, los hilos. Muestra graficamente como se
+ * llena y vacia la cola
+ *
  * @author Laura
  */
 public class ColaFrame extends java.awt.Frame {
@@ -44,7 +46,7 @@ public class ColaFrame extends java.awt.Frame {
     }//GEN-LAST:event_exitForm
 
     /**
-     * Monta la ventana, lanza un productor y consumidor, espera a q terminen
+     * Monta la ventana, lanza 4 productores y 1 consumidor, espera a que terminen
      * Espera 3s y cierra
      */
     public static void main(String args[]) throws InterruptedException {   // throws por los join() y el sleep()
@@ -67,27 +69,43 @@ public class ColaFrame extends java.awt.Frame {
         // La cola recibe el canvas para poder avisarle cuando cambie
         ColaLenta cola = new ColaLenta(capacidad, canvas);
 
-        Thread[] hilos=new Thread[5];
-        for (int i=0;i<4;i++){
-            hilos[i]=new Productor(cola);
+        //creación de los 4 productores
+        Productor productores[] = new Productor[4];
+        for (int i = 0; i < productores.length; i++) {
+            productores[i] = new Productor(cola);
         }
-        // Crear hilos (los dos heredan de Thread, se arrancan directamente)
-        hilos[4]= new Consumidor(cola);
+        Consumidor c = new Consumidor(cola);
 
-        for(int i=0;i<5;i++){
-            hilos[i].start();
+        //lanzo los productores
+        for (int i = 0; i < productores.length; i++) {
+            productores[i].start();
         }
-        
-        for(int i=0;i<5;i++){
-            try{
-                hilos[i].join();
-            }catch(InterruptedException ex){
-                
+
+        //lanzo el consumidor y espero a que termine
+        c.start();
+        c.join();
+
+        //cuando el consumidor ha terminado ya nadie va a hacer hueco:
+        //despierto 3 veces (uno por intento) a los productores que queden para que desistan.
+        //Antes espero 4 s: asi los productores que estaban en su sleep (hasta 3 s) ya han
+        //vuelto a intentar acolar y estan en wait(). Si no, se perderian algun aviso
+        //(notifyAll solo despierta a los que ya esperan) y el programa se quedaria colgado
+        Thread.sleep(4000);
+        for (int i = 0; i < 3; i++) {
+            Thread.sleep(1000);
+            synchronized (cola) {   //para hacer notifyAll hay que tener el cerrojo de la cola
+                cola.notifyAll();   //despierta a todos los que esperan en la cola
             }
+            Thread.sleep(1000);
         }
 
-        Thread.sleep(3000);   // espero 3 segundos para que se vea el resultado final
-        System.exit(0);       // cierro el programa
+        //espero a que terminen todos los productores
+        for (int i = 0; i < productores.length; i++) {
+            productores[i].join();
+        }
+
+        Thread.sleep(3000);   //espero 3 segundos para ver el resultado final
+        System.exit(0);
     }
 
 

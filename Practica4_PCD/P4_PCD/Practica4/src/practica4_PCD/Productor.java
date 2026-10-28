@@ -3,7 +3,7 @@ package practica4_PCD;
 import java.util.Random;
 
 /**
- * Hilo que mete 10 floats aleatorios en la cola.
+ * Hilo que intenta meter 15 floats aleatorios en la cola.
  *
  * @author Laura
  */

@@ -135,8 +135,8 @@ is inserted or removed.
   waiting producers try again; the ones that don't get it wait again. After **3 attempts**,
   the producer gives up, throws the "queue full" exception and finishes.
 - `desacola` behaves the same way when the queue is empty.
-- When the consumer finishes, it calls `finalizar()`, which sets a shared flag and wakes up all
-  waiting producers so they give up and the program can end.
+- When the consumer finishes, `main` waits 4 s (so every remaining producer is already waiting) and then
+  calls `notifyAll()` on the queue 3 times, one per attempt, so the waiting producers use up their attempts, give up and the program can end. No shared flag is used.
 
 Test: **4 producers** (15 elements each) and **1 consumer** (15 elements), all working at
 random intervals between 1 and 3 seconds.
@@ -150,10 +150,10 @@ random intervals between 1 and 3 seconds.
 
 ### 🧩 Changes
 
-- **ColaLenta**: `acola` and `desacola` wait with `while (condition && intentos < 3) wait();` and call `notifyAll()` after every change. New `fin` flag and `finalizar()` method
+- **ColaLenta**: `acola` and `desacola` wait with `while (condition && intentos < 3) wait();`, then check the condition again with an `if/else`: insert/extract, or give up and throw the exception. They call `notifyAll()` after every change
 - **Productor**: Tries to insert 15 random floats, one every 1-3 s. If `acola` throws, the thread ends
-- **Consumidor**: Extracts 15 elements, one every 1-3 s, and calls `finalizar()` when it finishes
-- **ColaFrame**: Creates an array of 5 threads (4 producers and 1 consumer), starts them all and waits for all of them
+- **Consumidor**: Extracts 15 elements, one every 1-3 s
+- **ColaFrame**: Creates 4 producers and 1 consumer and starts them. Waits for the consumer, then waits 4 s and wakes up the remaining producers 3 times with `notifyAll()` (inside `synchronized (cola)`) so they give up
 
 ### 📊 Results
 
@@ -163,7 +163,7 @@ random intervals between 1 and 3 seconds.
 | FIFO order | ✅ Numbers are extracted in the same order they were inserted |
 | Queue size | ✅ Always between 0 and 5 |
 | 3 attempts | ✅ Producers give up after their third failed attempt |
-| End of consumer | ✅ Waiting producers give up immediately and the program ends |
+| End of consumer | ✅ Remaining producers use up their attempts, give up and the program ends |
 
 Example: two producers on their third attempt compete for the same free slot. One gets it,
 the other gives up:
