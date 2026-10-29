@@ -18,6 +18,7 @@ shared object used by concurrent threads.
 | `Practica2_PCD` | Practice 2 | Thread creation: producer and consumers |
 | `Practica3_PCD` | Practice 3 | Synchronized queue with graphical view (Frame and Canvas) |
 | `Practica4_PCD` | Practice 4 | Synchronization conditions with wait and notifyAll |
+| `Practica5_PCD` | Practice 5 | Synchronization condition: restaurant payment points with priorities |
 
 Each folder contains the NetBeans project and the assignment statement (PDF).
 
@@ -180,6 +181,42 @@ The consumer extracts its 15 elements, while the producers can't insert all of t
 
 ---
 
+## 🛒 Practice 5 - Synchronization Condition: Restaurant Payment Points
+
+### Description
+
+A ski resort restaurant has 4 payment points: all of them accept cards, and only 2 of them
+also accept cash. Cash customers can only use the cash points; card customers use the card
+points or, if those are busy, the cash points. When a cash point is free and there are cash
+customers waiting, **cash customers have priority** over card customers.
+
+50 customers arrive every 1-2 seconds (30% cash, 70% card). Paying takes 3-5 s in cash and
+2-4 s by card. A window shows the waiting queues and who is paying at each type of point.
+
+### 🎯 Learning Objectives
+
+- Solving a synchronization problem with `wait()` and `notifyAll()` on a shared monitor
+- Using state variables (free points, cash customers waiting) to implement **priorities**
+- Creating threads with `Thread` (cash) and `Runnable` (card) in the same program
+- Showing the state of a concurrent system in a `Canvas` updated from many threads
+
+### 🧩 Classes Implemented
+
+- **PuntosVenta**: Shared monitor. A card customer waits while there is no free card point and (no free cash point or a cash customer is waiting). Cash customers count themselves in `esperaEfectivo` while waiting, which gives them priority. Every exit calls `notifyAll()`
+- **Efectivo**: Extends `Thread`. Arrives, enters, pays for 3-5 s and leaves
+- **Tarjeta**: Implements `Runnable`. Same steps, paying for 2-4 s; remembers whether it used a card or a cash point
+- **Generador**: `main`. Creates the window, the canvas and the shared `PuntosVenta`, launches 50 customers and waits for all of them
+- **MiCanvas**: Four lists (card queue, cash queue, paying at card points, paying at cash points) drawn as boxes; card customers in blue, cash customers in red. All methods are `synchronized` because many threads update the lists while `paint` reads them
+- **Elemento**: Customer id and type. Overrides `equals` so `remove()` deletes the customer by id instead of by position
+
+### 📊 Results
+
+- Never more than 2 customers at the card points or at the cash points
+- Card customers only use a cash point when both card points are busy and no cash customer is waiting
+- With faster arrivals, cash customers get a free cash point before card customers that were waiting longer
+
+---
+
 ## 💻 Technologies Used
 
 - **Language:** Java
@@ -193,4 +230,5 @@ The consumer extracts its 15 elements, while the producers can't insert all of t
    - Practice 2: `Practica2_PCD/P2_PCD`
    - Practice 3: `Practica3_PCD/P3_PCD/Practica3`
    - Practice 4: `Practica4_PCD/P4_PCD/Practica4`
-3. Run `UsaCola.java` (Practices 1-2) or `ColaFrame.java` (Practices 3-4)
+   - Practice 5: `Practica5_PCD/P5_PCD`
+3. Run `UsaCola.java` (Practices 1-2), `ColaFrame.java` (Practices 3-4) or `Generador.java` (Practice 5)
