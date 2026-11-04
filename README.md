@@ -19,6 +19,7 @@ shared object used by concurrent threads.
 | `Practica3_PCD` | Practice 3 | Synchronized queue with graphical view (Frame and Canvas) |
 | `Practica4_PCD` | Practice 4 | Synchronization conditions with wait and notifyAll |
 | `Practica5_PCD` | Practice 5 | Synchronization condition: restaurant payment points with priorities |
+| `Practica6_PCD` | Practice 6 | Semaphores: escalators with limits per section and in total |
 
 Each folder contains the NetBeans project and the assignment statement (PDF).
 
@@ -217,6 +218,38 @@ customers waiting, **cash customers have priority** over card customers.
 
 ---
 
+## 🛗 Practice 6 - Semaphores: Escalators
+
+### Description
+
+A shopping centre has an escalator with an up section and a down section. Each section holds
+at most **4 people**, and because of a design error the whole system holds at most **7 people**
+between both sections. The problem is solved using only `java.util.concurrent.Semaphore`.
+
+50 customers arrive every 1-2 seconds, each one going up or down. Using the escalator takes
+2 seconds. A window shows the waiting queues and who is on each section.
+
+### 🎯 Learning Objectives
+
+- Using counting semaphores (`acquire()` / `release()`) to limit how many threads use a resource
+- Combining several limits: each thread takes one permit from its section and one from the total
+- Taking permits in a fixed order (own section first, shared total second) so no thread holds a total permit while waiting for its section
+- Sharing the semaphores between threads without a shared resource class
+
+### 🧩 Classes Implemented
+
+- **Subir**: Extends `Thread`. Takes a permit from `semSubida` (4) and from `semTotal` (7), goes up for 2 s and releases both
+- **Bajar**: Implements `Runnable`. Same steps with `semBajada` (4) and `semTotal`
+- **Generador**: `Frame` with the `main`. Creates the canvas and the three semaphores, launches 50 customers and waits for all of them
+- **MiCanvas**: Four lists (queue up, queue down, up section, down section) shown as boxes, with the number of people on each section and in total
+
+### 📊 Results
+
+- With fast arrivals, never more than 4 people on a section and never more than 7 in total
+- All 50 customers finish and the program ends
+
+---
+
 ## 💻 Technologies Used
 
 - **Language:** Java
@@ -231,4 +264,5 @@ customers waiting, **cash customers have priority** over card customers.
    - Practice 3: `Practica3_PCD/P3_PCD/Practica3`
    - Practice 4: `Practica4_PCD/P4_PCD/Practica4`
    - Practice 5: `Practica5_PCD/P5_PCD`
-3. Run `UsaCola.java` (Practices 1-2), `ColaFrame.java` (Practices 3-4) or `Generador.java` (Practice 5)
+   - Practice 6: `Practica6_PCD/P6_PCD`
+3. Run `UsaCola.java` (Practices 1-2), `ColaFrame.java` (Practices 3-4) or `Generador.java` (Practices 5-6)
