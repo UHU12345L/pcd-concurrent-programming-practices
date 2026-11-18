@@ -20,6 +20,7 @@ shared object used by concurrent threads.
 | `Practica4_PCD` | Practice 4 | Synchronization conditions with wait and notifyAll |
 | `Practica5_PCD` | Practice 5 | Synchronization condition: restaurant payment points with priorities |
 | `Practica6_PCD` | Practice 6 | Semaphores: escalators with limits per section and in total |
+| `Practica7_PCD` | Practice 7 | Thread pools: sled slopes with priorities and returned values |
 
 Each folder contains the NetBeans project and the assignment statement (PDF).
 
@@ -250,6 +251,44 @@ between both sections. The problem is solved using only `java.util.concurrent.Se
 
 ---
 
+## 🛷 Practice 7 - Thread Pools: Sled Slopes
+
+### Description
+
+A ski resort has two sled slopes: one for single sleds (up to **4** at a time) and one for
+double sleds (up to **2**). Children come alone or in pairs. Each one uses its own slope, but a
+child alone who finds the single slope full may use the double slope **if no pair is waiting**
+for it, so pairs have priority on their slope.
+
+50 arrivals, one every 0.5 seconds (60% single, 40% pairs). Instead of creating a thread for
+each child, tasks are sent to two fixed-size **thread pools**: 7 threads for single children
+and 5 for pairs. Each single child returns the seconds it spent on the slope, and the total is
+shown at the end. A window shows the waiting queues and the occupation of both slopes.
+
+### 🎯 Learning Objectives
+
+- Running tasks with `ExecutorService` and `Executors.newFixedThreadPool` instead of creating threads
+- Returning a value from a task with `Callable<Integer>` and collecting it with `Future.get()`
+- Waiting for tasks with `Future.get()` and closing pools with `shutdown()`
+- Reusing the monitor pattern (`wait()` / `notifyAll()` with a waiting counter) to give priority to one type of client
+
+### 🧩 Classes Implemented
+
+- **Pistas**: Shared monitor. A single child waits while its slope is full and (the double slope is full or a pair is waiting). Pairs count themselves in `esperaPareja` while waiting, which gives them priority. Every exit calls `notifyAll()`
+- **Individual**: Implements `Callable<Integer>`. Goes down for 3-5 s on the single or the double slope and returns the seconds spent
+- **Pareja**: Implements `Runnable`. Goes down the double slope for 2-4 s
+- **Generador**: `main`. Creates the window, the canvas, the shared `Pistas` and the two pools; submits 50 tasks keeping their `Future`s, shuts the pools down, waits for every task and adds up the seconds returned by the single children
+- **MiCanvas**: Queues and slopes drawn as boxes; single children in blue, pairs in red
+- **Elemento**: Child id and type. Overrides `equals` so `remove()` deletes by id
+
+### 📊 Results
+
+- Never more than 7 single children and 5 pairs active at the same time (pool sizes)
+- No single child uses the double slope while a pair is waiting, nor while its own slope has room
+- All tasks finish and the total time of the single children is printed (e.g. 132 seconds)
+
+---
+
 ## 💻 Technologies Used
 
 - **Language:** Java
@@ -265,4 +304,5 @@ between both sections. The problem is solved using only `java.util.concurrent.Se
    - Practice 4: `Practica4_PCD/P4_PCD/Practica4`
    - Practice 5: `Practica5_PCD/P5_PCD`
    - Practice 6: `Practica6_PCD/P6_PCD`
-3. Run `UsaCola.java` (Practices 1-2), `ColaFrame.java` (Practices 3-4) or `Generador.java` (Practices 5-6)
+   - Practice 7: `Practica7_PCD/P7_PCD`
+3. Run `UsaCola.java` (Practices 1-2), `ColaFrame.java` (Practices 3-4) or `Generador.java` (Practices 5-7)
