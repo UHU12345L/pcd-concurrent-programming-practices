@@ -21,6 +21,7 @@ shared object used by concurrent threads.
 | `Practica5_PCD` | Practice 5 | Synchronization condition: restaurant payment points with priorities |
 | `Practica6_PCD` | Practice 6 | Semaphores: escalators with limits per section and in total |
 | `Practica7_PCD` | Practice 7 | Thread pools: sled slopes with priorities and returned values |
+| `Practica8_PCD` | Practice 8 | Locks and conditions: ski equipment rental in chained zones |
 
 Each folder contains the NetBeans project and the assignment statement (PDF).
 
@@ -289,6 +290,44 @@ shown at the end. A window shows the waiting queues and the occupation of both s
 
 ---
 
+## 🎿 Practice 8 - Locks and Conditions: Ski Equipment Rental
+
+### Description
+
+Customers without equipment rent it by going through three zones in order: **boots**, **suit**,
+and finally **skis** or **snowboard** (one zone each). Each zone holds at most **2** customers.
+In the boots zone, the type with **more customers waiting** goes first (ties go to skiers).
+A customer who finishes a zone keeps their place until there is room in the next one.
+
+20 customers arrive every 1-2 seconds (60% skis, 40% snowboard), spending 2-3 s in each zone.
+Synchronization uses `ReentrantLock` and `Condition`, **without `signalAll()`**. A window shows
+the boots queue and the occupation of every zone.
+
+### 🎯 Learning Objectives
+
+- Using `ReentrantLock` with `lock()` / `unlock()` in a `try/finally` instead of `synchronized`
+- Using one `Condition` per waiting reason, with `await()` and `signal()`
+- Implementing a priority based on queue lengths waking only one thread at a time
+- Moving through chained resources: taking the next zone before releasing the current one
+
+### 🧩 Classes Implemented
+
+- **Equipamiento**: Shared monitor with a lock and five conditions (boots for skiers, boots for snowboarders, suit, skis, snowboard). A skier waits at the boots while there is no room or more snowboarders are waiting, and vice versa. `despiertaBotas()` signals the type with priority when a place is freed, when a place is still free after entering, and when someone arrives to a free place that is not their turn
+- **Esquis**: Extends `Thread`. Boots → suit → skis, taking the next zone before leaving the current one
+- **Tabla**: Implements `Runnable`. Boots → suit → snowboard
+- **Generador**: `main`. Creates the window, the canvas and the shared `Equipamiento`, launches 20 customers and waits for all of them
+- **MiCanvas**: Boots queue (with the number of each type waiting) and the four zones; skiers in blue, snowboarders in red, `[n]` for customers waiting to move to the next zone
+- **Elemento**: Customer id and type. Overrides `equals` so `remove()` deletes by id
+- **Clase_P8**: Class example, corrected to use `ReentrantLock` and `Condition`
+
+### 📊 Results
+
+- Never more than 2 customers in any zone
+- With fast arrivals, the boots queue always serves the type with more customers waiting
+- All 20 customers finish and the program ends
+
+---
+
 ## 💻 Technologies Used
 
 - **Language:** Java
@@ -305,4 +344,5 @@ shown at the end. A window shows the waiting queues and the occupation of both s
    - Practice 5: `Practica5_PCD/P5_PCD`
    - Practice 6: `Practica6_PCD/P6_PCD`
    - Practice 7: `Practica7_PCD/P7_PCD`
-3. Run `UsaCola.java` (Practices 1-2), `ColaFrame.java` (Practices 3-4) or `Generador.java` (Practices 5-7)
+   - Practice 8: `Practica8_PCD/P8_PCD`
+3. Run `UsaCola.java` (Practices 1-2), `ColaFrame.java` (Practices 3-4) or `Generador.java` (Practices 5-8)
